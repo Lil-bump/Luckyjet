@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Jet Predictor Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(94, 234, 212, 0.1);
+            position: relative;
+            padding: 25px;
+            animation: fadeIn 0.8s ease-out;
+            z-index: 10;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #0ea5e9, #8b5cf6, #ec4899);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 0 10px;
+        }
+
+        h1 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #0ea5e9, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(14, 165, 233, 0.3);
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            line-height: 1.5;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(94, 234, 212, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .prediction-time {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff99;
+            border-radius: 15px;
+            padding: 15px 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.3);
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .prediction-time-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .prediction-time-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff99;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.8);
+        }
+
+        .validation-status {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 10px 20px;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            font-weight: bold;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            display: none;
+        }
+
+        .validation-status.pending {
+            border: 2px solid #FFA500;
+            color: #FFA500;
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.3);
+        }
+
+        .validation-status.validated {
+            border: 2px solid #00ff99;
+            color: #00ff99;
+            box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+        }
+
+        .validation-status.expired {
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+        }
+
+        .multiplier-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 6px solid #00ff99;
+            background: radial-gradient(circle, rgba(0, 255, 153, 0.2), rgba(0, 0, 0, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 255, 153, 0.6);
+            animation: circleFloat 4s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+
+        .multiplier-circle.active {
+            transform: scale(1.1);
+            border-color: #FFD700;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+            animation: circleActive 1s ease-in-out infinite;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff99, #FFD700);
+            border-radius: 10px;
+            transition: width 20s linear;
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            animation: slideIn 1s ease-out;
+        }
+
+        .btn {
+            padding: 16px 25px;
+            border-radius: 15px; /* Arrondi augmenté */
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #0ea5e9, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(45deg, #666, #444);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .affiliate {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            text-decoration: none;
+            padding: 18px 25px;
+            border-radius: 15px; /* Arrondi augmenté */
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: block;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .affiliate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .affiliate:active {
+            transform: translateY(0);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 0.9rem;
+            padding: 0 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes circleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes circleActive {
+            0%, 100% { transform: scale(1.1) rotate(0deg); }
+            50% { transform: scale(1.15) rotate(5deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        }
+
+        /* Animation du fond - plus visible */
+        .background-anim {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.3), transparent 70%);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(20px, 30px) rotate(90deg); }
+            50% { transform: translate(0, 50px) rotate(180deg); }
+            75% { transform: translate(-20px, 30px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff99;
+            border-radius: 50%;
+            animation: particleFloat 6s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                font-size: 0.95rem;
+            }
+
+            .multiplier-circle {
+                width: 160px;
+                height: 160px;
+                font-size: 2rem;
+            }
+
+            .btn, .affiliate {
+                padding: 14px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animation de fond - plus visible -->
+    <div class="background-anim">
+        <div class="circle" style="width: 300px; height: 300px; top: 10%; left: 5%; animation-duration: 20s;"></div>
+        <div class="circle" style="width: 200px; height: 200px; top: 60%; left: 80%; animation-duration: 15s; animation-delay: -5s;"></div>
+        <div class="circle" style="width: 150px; height: 150px; top: 30%; left: 70%; animation-duration: 25s; animation-delay: -10s;"></div>
+    </div>
+
+    <!-- Particules flottantes -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-rocket"></i> Lucky Jet Predictor Pro</h1>
+            <p class="subtitle">Prédictions professionnelles pour maximiser vos gains sur Lucky Jet</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="totalPredictions">0</div>
+                <div class="stat-label">Prédictions</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="accuracyRate">92%</div>
+                <div class="stat-label">Précision</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="bestMultiplier">--</div>
+                <div class="stat-label">Record</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <!-- Texte "LUCKY JET" en orange supprimé -->
+            
+            <div class="prediction-time" id="predictionTimeContainer" style="display: none;">
+                <div class="prediction-time-label">Prédiction pour</div>
+                <div class="prediction-time-value" id="predictionTime">--:--</div>
+            </div>
+
+            <div class="validation-status pending" id="validationStatus">
+                En attente de validation...
+            </div>
+            
+            <div class="multiplier-circle" id="multiplierCircle">
+                <span id="multiplierValue">--</span>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="predictBtn">
+                <i class="fas fa-bolt"></i> Lancer la Prédiction
+            </button>
+            
+            <a href="https://1wulri.life/?p=m8d6" target="_blank" class="affiliate">
+                <i class="fas fa-gift"></i> Inscription avec bonus
+            </a>
+        </div>
+
+        <footer>
+            <!-- Code promo changé de "LUCKY25" à "GS07" -->
+            <p>© 2025 Lucky Jet Predictor Pro | Utilisez le code promo: <strong>GS07</strong></p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let isRunning = false;
+        let bestMultiplier = 0;
+        let totalPredictions = 0;
+        let lastMultiplier = 0;
+        let currentPrediction = null;
+        let validationTimer = null;
+
+        // Éléments DOM
+        const predictBtn = document.getElementById('predictBtn');
+        const multiplierValue = document.getElementById('multiplierValue');
+        const multiplierCircle = document.getElementById('multiplierCircle');
+        const progressBar = document.getElementById('progressBar');
+        const lastMultiplierEl = document.getElementById('lastMultiplier');
+        const bestMultiplierEl = document.getElementById('bestMultiplier');
+        const totalPredictionsEl = document.getElementById('totalPredictions');
+        const predictionTimeContainer = document.getElementById('predictionTimeContainer');
+        const predictionTimeEl = document.getElementById('predictionTime');
+        const validationStatusEl = document.getElementById('validationStatus');
+        const accuracyRateEl = document.getElementById('accuracyRate');
+
+        // Génération des particules
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    
+                    // Couleurs aléatoires
+                    const colors = ['#00ff99', '#FFD700', '#FFA500', '#FF6347'];
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // Supprimer la particule après l'animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 8000);
+                }
+            }, 500);
+        }
+
+        // Génération de l'heure de prédiction (2 à 5 minutes dans le futur)
+        function generatePredictionTime() {
+            const now = new Date();
+            let minutesToAdd;
+            
+            // 50% de chance d'avoir entre 2 et 3 minutes
+            if (Math.random() < 0.5) {
+                minutesToAdd = 2 + Math.random() * 1; // Entre 2 et 3 minutes
+            } 
+            // 50% de chance d'avoir entre 3 et 5 minutes
+            else {
+                minutesToAdd = 3 + Math.random() * 2; // Entre 3 et 5 minutes
+            }
+            
+            const secondsToAdd = Math.floor(Math.random() * 60); // 0 à 59 secondes supplémentaires
+            
+            const predictionTime = new Date(now.getTime() + minutesToAdd * 60000 + secondsToAdd * 1000);
+            
+            // Garder les secondes à 0 pour un affichage plus propre
+            predictionTime.setSeconds(0);
+            
+            return predictionTime;
+        }
+
+        // Formatage de l'heure
+        function formatTime(date) {
+            return date.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // Génération du multiplicateur selon la distribution demandée
+        function generateMultiplier() {
+            const random = Math.random();
+            let multiplier;
+            
+            if (random < 0.20) {
+                // 20% de chance d'avoir des cotes entre 1.00 et 2.00
+                multiplier = Math.random() * (2.00 - 1.00) + 1.00;
+            } else if (random < 0.50) {
+                // 30% de chance d'avoir des cotes entre 2.00 et 3.00
+                multiplier = Math.random() * (3.00 - 2.00) + 2.00;
+            } else if (random < 0.65) {
+                // 15% de chance d'avoir des cotes entre 3.00 et 5.00
+                multiplier = Math.random() * (5.00 - 3.00) + 3.00;
+            } else if (random < 0.75) {
+                // 10% de chance d'avoir des cotes entre 5.00 et 10.00
+                multiplier = Math.random() * (10.00 - 5.00) + 5.00;
+            } else {
+                // 5% de chance d'avoir des cotes entre 10.00 et 20.00
+                multiplier = Math.random() * (20.00 - 10.00) + 10.00;
+            }
+            
+            return parseFloat(multiplier.toFixed(2));
+        }
+
+        // Animation du multiplicateur qui monte
+        function animateMultiplier(targetMultiplier) {
+            let currentMultiplier = 1.00;
+            const increment = targetMultiplier / 100;
+            const interval = 200; // 200ms entre chaque incrément
+            
+            const animation = setInterval(() => {
+                currentMultiplier += increment;
+                
+                if (currentMultiplier >= targetMultiplier) {
+                    currentMultiplier = targetMultiplier;
+                    clearInterval(animation);
+                    
+                    // Animation d'explosion
+                    multiplierCircle.style.transform = 'scale(1.3)';
+                    multiplierCircle.style.borderColor = '#FFD700';
+                    multiplierCircle.style.boxShadow = '0 0 80px rgba(255, 215, 0, 1)';
+                    
+                    setTimeout(() => {
+                        multiplierCircle.style.transform = 'scale(1)';
+                        multiplierCircle.style.borderColor = '#00ff99';
+                        multiplierCircle.style.boxShadow = '0 0 40px rgba(0, 255, 153, 0.6)';
+                    }, 1000);
+                }
+                
+                multiplierValue.textContent = currentMultiplier.toFixed(2) + 'x';
+                
+                // Changement de couleur selon la valeur
+                if (currentMultiplier >= 10) {
+                    multiplierValue.style.color = '#FFD700';
+                } else if (currentMultiplier >= 5) {
+                    multiplierValue.style.color = '#FFA500';
+                } else if (currentMultiplier >= 2) {
+                    multiplierValue.style.color = '#00ff99';
+                } else {
+                    multiplierValue.style.color = '#ffffff';
+                }
+            }, interval);
+        }
+
+        // Mise à jour des statistiques
+        function updateStats(multiplier) {
+            lastMultiplier = multiplier;
+            totalPredictions++;
+            
+            if (multiplier > bestMultiplier) {
+                bestMultiplier = multiplier;
+                bestMultiplierEl.textContent = bestMultiplier.toFixed(2) + 'x';
+            }
+            
+            totalPredictionsEl.textContent = totalPredictions;
+            
+            // Calcul du taux de précision (simulé)
+            const accuracy = 90 + Math.floor(totalPredictions * 0.5);
+            accuracyRateEl.textContent = Math.min(accuracy, 98) + '%';
+        }
+
+        // Vérification si la prédiction est validée
+        function checkPredictionValidation() {
+            if (!currentPrediction) return;
+            
+            const now = new Date();
+            const timeDiff = currentPrediction.time.getTime() - now.getTime();
+            
+            if (timeDiff <= 0) {
+                // La prédiction est arrivée à échéance
+                validationStatusEl.textContent = '✅ Prédiction validée avec succès !';
+                validationStatusEl.className = 'validation-status validated';
+                
+                // Permettre une nouvelle prédiction après 3 secondes
+                setTimeout(() => {
+                    currentPrediction = null;
+                    predictionTimeContainer.style.display = 'none';
+                    validationStatusEl.style.display = 'none';
+                    predictBtn.disabled = false;
+                    predictBtn.innerHTML = '<i class="fas fa-bolt"></i> Lancer la Prédiction';
+                    
+                    // Remettre le multiplicateur à -- seulement après validation
+                    multiplierValue.textContent = '--';
+                    multiplierValue.style.color = '#ffffff';
+                }, 3000);
+                
+                clearInterval(validationTimer);
+                validationTimer = null;
+            } else {
+                // Mise à jour du temps restant
+                const minutesLeft = Math.ceil(timeDiff / 60000);
+                validationStatusEl.textContent = `⏳ Validation dans ${minutesLeft} min`;
+            }
+        }
+
+        // Fonction principale de prédiction
+        function startPrediction() {
+            if (isRunning || currentPrediction) return;
+            
+            // Générer l'heure de prédiction
+            const predictionTime = generatePredictionTime();
+            currentPrediction = {
+                time: predictionTime,
+                multiplier: generateMultiplier()
+            };
+            
+            // Afficher l'heure de prédiction
+            predictionTimeEl.textContent = formatTime(predictionTime);
+            predictionTimeContainer.style.display = 'block';
+            
+            // Afficher le statut de validation
+            validationStatusEl.textContent = '⏳ En attente de validation...';
+            validationStatusEl.className = 'validation-status pending';
+            validationStatusEl.style.display = 'block';
+            
+            // Démarrer le timer de validation
+            validationTimer = setInterval(checkPredictionValidation, 1000);
+            
+            isRunning = true;
+            
+            // Désactiver le bouton et changer le texte
+            predictBtn.disabled = true;
+            predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Prédiction en cours...';
+            
+            // Activer l'animation du cercle
+            multiplierCircle.classList.add('active');
+            
+            // Démarrer la barre de progression
+            progressBar.style.width = '100%';
+            
+            // Animer le multiplicateur
+            animateMultiplier(currentPrediction.multiplier);
+            
+            // Fin de la prédiction après 20 secondes
+            setTimeout(() => {
+                isRunning = false;
+                
+                // Désactiver l'animation du cercle
+                multiplierCircle.classList.remove('active');
+                
+                // Remettre la barre de progression à zéro
+                progressBar.style.width = '0%';
+                
+                // Mettre à jour les statistiques
+                updateStats(currentPrediction.multiplier);
+                
+                // Le bouton reste désactivé jusqu'à la validation
+                predictBtn.innerHTML = '<i class="fas fa-hourglass-half"></i> En attente de validation';
+                
+            }, 20000);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+            }, 100);
+            
+            // Événement pour le bouton de prédiction
+            predictBtn.addEventListener('click', startPrediction);
+            
+            // Effet de vibration sur mobile
+            predictBtn.addEventListener('click', function() {
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
