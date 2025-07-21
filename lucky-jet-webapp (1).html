@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Jet - Prédicteur Professionnel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('lucky-jet-bg.jpeg') no-repeat center center;
+            background-size: cover;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            aspect-ratio: 9/16;
+            max-width: 56.25vh;
+            max-height: 177.78vw;
+            margin: 0 auto;
+        }
+
+        /* Overlay pour améliorer la lisibilité */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(75, 0, 130, 0.5));
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Header avec logo 1win */
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ff99;
+            text-shadow: 0 0 20px rgba(0, 255, 153, 0.8);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        /* Zone principale du jeu */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Heure de prédiction */
+        .prediction-time {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff99;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.3);
+        }
+
+        .prediction-time-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .prediction-time-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff99;
+            text-shadow: 0 0 10px rgba(0, 255, 153, 0.8);
+        }
+
+        /* Statut de validation */
+        .validation-status {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .validation-status.pending {
+            border: 2px solid #FFA500;
+            color: #FFA500;
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.3);
+        }
+
+        .validation-status.validated {
+            border: 2px solid #00ff99;
+            color: #00ff99;
+            box-shadow: 0 0 15px rgba(0, 255, 153, 0.3);
+        }
+
+        .validation-status.expired {
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+        }
+
+        /* Titre Lucky Jet */
+        .game-title {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            animation: titlePulse 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        /* Cercle principal avec multiplicateur */
+        .multiplier-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 6px solid #00ff99;
+            background: radial-gradient(circle, rgba(0, 255, 153, 0.2), rgba(0, 0, 0, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 255, 153, 0.6);
+            animation: circleFloat 4s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+
+        .multiplier-circle.active {
+            transform: scale(1.1);
+            border-color: #FFD700;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+            animation: circleActive 1s ease-in-out infinite;
+        }
+
+        /* Particules flottantes */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff99;
+            border-radius: 50%;
+            animation: particleFloat 6s linear infinite;
+            opacity: 0.7;
+        }
+
+        /* Barre de progression */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff99, #FFD700);
+            border-radius: 10px;
+            transition: width 20s linear;
+            box-shadow: 0 0 20px rgba(0, 255, 153, 0.6);
+        }
+
+        /* Bouton de prédiction */
+        .predict-btn {
+            background: linear-gradient(45deg, #00ff99, #00cc7a);
+            border: none;
+            color: #000;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 18px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 255, 153, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 255, 153, 0.6);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .predict-btn:disabled {
+            background: linear-gradient(45deg, #666, #444);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .predict-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .predict-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Statistiques */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff99;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(0, 255, 153, 0.8);
+            }
+            to {
+                text-shadow: 0 0 30px rgba(0, 255, 153, 1), 0 0 40px rgba(0, 255, 153, 0.8);
+            }
+        }
+
+        @keyframes titlePulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes circleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes circleActive {
+            0%, 100% {
+                transform: scale(1.1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.15) rotate(5deg);
+            }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive pour mobile */
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .multiplier-circle {
+                width: 160px;
+                height: 160px;
+                font-size: 2rem;
+            }
+            
+            .predict-btn {
+                font-size: 1.2rem;
+                padding: 15px 35px;
+            }
+        }
+
+        /* Effet de jet pour le personnage */
+        .jet-effect {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 20px;
+            background: linear-gradient(90deg, transparent, #FFD700, #FFA500);
+            border-radius: 50px;
+            opacity: 0;
+            animation: jetTrail 2s ease-in-out infinite;
+        }
+
+        @keyframes jetTrail {
+            0%, 100% {
+                opacity: 0;
+                transform: translateX(-50%) scaleX(0);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateX(-50%) scaleX(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particules flottantes -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Effet de jet -->
+    <div class="jet-effect"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">1WIN</div>
+        </div>
+
+        <!-- Zone de jeu principale -->
+        <div class="game-area">
+            <div class="game-title">LUCKY JET</div>
+            
+            <!-- Heure de prédiction -->
+            <div class="prediction-time" id="predictionTimeContainer" style="display: none;">
+                <div class="prediction-time-label">Prédiction pour</div>
+                <div class="prediction-time-value" id="predictionTime">--:--</div>
+            </div>
+
+            <!-- Statut de validation -->
+            <div class="validation-status pending" id="validationStatus" style="display: none;">
+                En attente de validation...
+            </div>
+            
+            <div class="multiplier-circle" id="multiplierCircle">
+                <span id="multiplierValue">--</span>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <button class="predict-btn" id="predictBtn">
+                🚀 Lancer la Prédiction
+            </button>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="lastMultiplier">--</div>
+                <div class="stat-label">Dernier</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="bestMultiplier">--</div>
+                <div class="stat-label">Meilleur</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalPredictions">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let isRunning = false;
+        let bestMultiplier = 0;
+        let totalPredictions = 0;
+        let lastMultiplier = 0;
+        let currentPrediction = null;
+        let validationTimer = null;
+
+        // Éléments DOM
+        const predictBtn = document.getElementById('predictBtn');
+        const multiplierValue = document.getElementById('multiplierValue');
+        const multiplierCircle = document.getElementById('multiplierCircle');
+        const progressBar = document.getElementById('progressBar');
+        const lastMultiplierEl = document.getElementById('lastMultiplier');
+        const bestMultiplierEl = document.getElementById('bestMultiplier');
+        const totalPredictionsEl = document.getElementById('totalPredictions');
+        const predictionTimeContainer = document.getElementById('predictionTimeContainer');
+        const predictionTimeEl = document.getElementById('predictionTime');
+        const validationStatusEl = document.getElementById('validationStatus');
+
+        // Génération des particules
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    
+                    // Couleurs aléatoires
+                    const colors = ['#00ff99', '#FFD700', '#FFA500', '#FF6347'];
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // Supprimer la particule après l'animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 8000);
+                }
+            }, 500);
+        }
+
+        // Génération de l'heure de prédiction (2 à 6 minutes dans le futur)
+        function generatePredictionTime() {
+            const now = new Date();
+            const minutesToAdd = Math.floor(Math.random() * 5) + 2; // 2 à 6 minutes
+            const secondsToAdd = Math.floor(Math.random() * 60); // 0 à 59 secondes supplémentaires
+            
+            const predictionTime = new Date(now.getTime() + minutesToAdd * 60000 + secondsToAdd * 1000);
+            
+            // Garder les secondes à 0 pour un affichage plus propre
+            predictionTime.setSeconds(0);
+            
+            return predictionTime;
+        }
+
+        // Formatage de l'heure
+        function formatTime(date) {
+            return date.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // Génération du multiplicateur selon les pourcentages spécifiés
+        function generateMultiplier() {
+            const random = Math.random();
+            let multiplier;
+            
+            if (random < 0.30) {
+                // 30% de chance d'avoir des cotes de 1 et quelques (1.1x à 1.99x)
+                multiplier = Math.random() * (1.99 - 1.1) + 1.1;
+            } else if (random < 0.60) {
+                // 30% de chance d'avoir des cotes de 2 et quelques (2.0x à 2.99x)
+                multiplier = Math.random() * (2.99 - 2.0) + 2.0;
+            } else if (random < 0.80) {
+                // 20% de chance d'avoir des cotes de 3 à 5 (3.0x à 5.0x)
+                multiplier = Math.random() * (5.0 - 3.0) + 3.0;
+            } else {
+                // 20% de chance d'avoir des cotes de 5 à 20 (5.0x à 20.0x)
+                multiplier = Math.random() * (20.0 - 5.0) + 5.0;
+            }
+            
+            return parseFloat(multiplier.toFixed(2));
+        }
+
+        // Animation du multiplicateur qui monte
+        function animateMultiplier(targetMultiplier) {
+            let currentMultiplier = 1.00;
+            const increment = targetMultiplier / 100;
+            const interval = 200; // 200ms entre chaque incrément
+            
+            const animation = setInterval(() => {
+                currentMultiplier += increment;
+                
+                if (currentMultiplier >= targetMultiplier) {
+                    currentMultiplier = targetMultiplier;
+                    clearInterval(animation);
+                    
+                    // Animation d'explosion
+                    multiplierCircle.style.transform = 'scale(1.3)';
+                    multiplierCircle.style.borderColor = '#FFD700';
+                    multiplierCircle.style.boxShadow = '0 0 80px rgba(255, 215, 0, 1)';
+                    
+                    setTimeout(() => {
+                        multiplierCircle.style.transform = 'scale(1)';
+                        multiplierCircle.style.borderColor = '#00ff99';
+                        multiplierCircle.style.boxShadow = '0 0 40px rgba(0, 255, 153, 0.6)';
+                    }, 1000);
+                }
+                
+                multiplierValue.textContent = currentMultiplier.toFixed(2) + 'x';
+                
+                // Changement de couleur selon la valeur
+                if (currentMultiplier >= 10) {
+                    multiplierValue.style.color = '#FFD700';
+                } else if (currentMultiplier >= 5) {
+                    multiplierValue.style.color = '#FFA500';
+                } else if (currentMultiplier >= 2) {
+                    multiplierValue.style.color = '#00ff99';
+                } else {
+                    multiplierValue.style.color = '#ffffff';
+                }
+            }, interval);
+        }
+
+        // Mise à jour des statistiques
+        function updateStats(multiplier) {
+            lastMultiplier = multiplier;
+            totalPredictions++;
+            
+            if (multiplier > bestMultiplier) {
+                bestMultiplier = multiplier;
+            }
+            
+            lastMultiplierEl.textContent = lastMultiplier.toFixed(2) + 'x';
+            bestMultiplierEl.textContent = bestMultiplier.toFixed(2) + 'x';
+            totalPredictionsEl.textContent = totalPredictions;
+        }
+
+        // Vérification si la prédiction est validée
+        function checkPredictionValidation() {
+            if (!currentPrediction) return;
+            
+            const now = new Date();
+            const timeDiff = currentPrediction.time.getTime() - now.getTime();
+            
+            if (timeDiff <= 0) {
+                // La prédiction est arrivée à échéance
+                validationStatusEl.textContent = '✅ Prédiction validée !';
+                validationStatusEl.className = 'validation-status validated';
+                
+                // Permettre une nouvelle prédiction après 3 secondes
+                setTimeout(() => {
+                    currentPrediction = null;
+                    predictionTimeContainer.style.display = 'none';
+                    validationStatusEl.style.display = 'none';
+                    predictBtn.disabled = false;
+                    predictBtn.textContent = '🚀 Lancer la Prédiction';
+                    
+                    // Remettre le multiplicateur à -- seulement après validation
+                    multiplierValue.textContent = '--';
+                    multiplierValue.style.color = '#ffffff';
+                }, 3000);
+                
+                clearInterval(validationTimer);
+                validationTimer = null;
+            } else {
+                // Mise à jour du temps restant
+                const minutesLeft = Math.ceil(timeDiff / 60000);
+                validationStatusEl.textContent = `⏳ Validation dans ${minutesLeft} min`;
+            }
+        }
+
+        // Fonction principale de prédiction
+        function startPrediction() {
+            if (isRunning || currentPrediction) return;
+            
+            // Générer l'heure de prédiction
+            const predictionTime = generatePredictionTime();
+            currentPrediction = {
+                time: predictionTime,
+                multiplier: generateMultiplier()
+            };
+            
+            // Afficher l'heure de prédiction
+            predictionTimeEl.textContent = formatTime(predictionTime);
+            predictionTimeContainer.style.display = 'block';
+            
+            // Afficher le statut de validation
+            validationStatusEl.textContent = '⏳ En attente de validation...';
+            validationStatusEl.className = 'validation-status pending';
+            validationStatusEl.style.display = 'block';
+            
+            // Démarrer le timer de validation
+            validationTimer = setInterval(checkPredictionValidation, 1000);
+            
+            isRunning = true;
+            
+            // Désactiver le bouton et changer le texte
+            predictBtn.disabled = true;
+            predictBtn.textContent = '🚀 Vol en cours...';
+            
+            // Activer l'animation du cercle
+            multiplierCircle.classList.add('active');
+            
+            // Démarrer la barre de progression
+            progressBar.style.width = '100%';
+            
+            // Animer le multiplicateur
+            animateMultiplier(currentPrediction.multiplier);
+            
+            // Fin de la prédiction après 20 secondes
+            setTimeout(() => {
+                isRunning = false;
+                
+                // Désactiver l'animation du cercle
+                multiplierCircle.classList.remove('active');
+                
+                // Remettre la barre de progression à zéro
+                progressBar.style.width = '0%';
+                
+                // Mettre à jour les statistiques
+                updateStats(currentPrediction.multiplier);
+                
+                // Le bouton reste désactivé jusqu'à la validation
+                // Le multiplicateur reste affiché jusqu'à la validation
+                predictBtn.textContent = '⏳ En attente de validation';
+                
+            }, 20000);
+        }
+
+        // Event listeners
+        predictBtn.addEventListener('click', startPrediction);
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+            }, 100);
+        });
+
+        // Effet de vibration sur mobile
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+        }
+
+        // Ajouter la vibration au clic du bouton
+        predictBtn.addEventListener('click', vibrate);
+    </script>
+</body>
+</html>
+
